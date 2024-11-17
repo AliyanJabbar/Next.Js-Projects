@@ -12,9 +12,12 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
-      boxShadow:{
-        fb: "0px 2px 4px rgba(0, 0, 0, .1), 0px 8px 16px rgba(0, 0, 0, .1)"
-      }
+      boxShadow: {
+        fb: "0px 2px 4px rgba(0, 0, 0, .1), 0px 8px 16px rgba(0, 0, 0, .1)",
+      },
+      fontFamily: {
+        Mulish: ["Mulish", "sans-serif"],
+      },
     },
   },
   plugins: [],

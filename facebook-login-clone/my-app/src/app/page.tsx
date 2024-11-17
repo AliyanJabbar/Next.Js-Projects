@@ -1,26 +1,12 @@
 export default function FbLoginClone() {
   return (
     <div>
-      <>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap"
-          rel="stylesheet"
-        />
-      </>
       {/* main */}
       <div className="flex justify-center h-screen mt-[180px] gap-[36px] px-[270px]">
         {/* left div */}
         <div>
           {/* Facebook Head */}
-          <h1 className="text-[60px] text-blue-600 font-[Mulish] font-[800] tracking-[-.02em]">
+          <h1 className="text-[60px] text-blue-600 font-Mulish font-[800] tracking-[-.02em]">
             facebook
           </h1>
           {/* Text */}
@@ -40,15 +26,28 @@ export default function FbLoginClone() {
                 placeholder="Email address or phone number"
               />
               {/* password input */}
-              <input  className="px-4 py-3 rounded-md w-full border text-[17px] border-gray-300 mb-[16px]" type="password" placeholder="Password" />
+              <input
+                className="px-4 py-3 rounded-md w-full border text-[17px] border-gray-300 mb-[16px]"
+                type="password"
+                placeholder="Password"
+              />
               {/* submit */}
-              <button className="bg-[#0866ff] hover:bg-[rgb(65,133,244)] p-[9px] w-full rounded-md text-white text-[20px] font-bold mb-[15px]">Log in</button>
+              <button className="bg-[#0866ff] hover:bg-[rgb(65,133,244)] p-[9px] w-full rounded-md text-white text-[20px] font-bold mb-[15px]">
+                Log in
+              </button>
               {/* forget password button */}
-              <a className="text-blue-600 hover:underline text-[14px] block w-fit mx-auto transition-all duration-200" href="/">Forgotten password?</a>
+              <a
+                className="text-blue-600 hover:underline text-[14px] block w-fit mx-auto transition-all duration-200"
+                href="/"
+              >
+                Forgotten password?
+              </a>
               {/* seperation */}
-              <hr className="mt-[20px] mb-[25px]"/>
+              <hr className="mt-[20px] mb-[25px]" />
               {/* create new account button */}
-              <button className="bg-[#42B72A] hover:bg-[#3fa52a] p-[11px] w-[calc(50%+10px)] rounded-md text-nowrap text-white text-[17px] font-bold mb-[23px] block mx-auto transition-all duration-200">Create new account</button>
+              <button className="bg-[#42B72A] hover:bg-[#3fa52a] p-[11px] w-[calc(50%+10px)] rounded-md text-nowrap text-white text-[17px] font-bold mb-[23px] block mx-auto transition-all duration-200">
+                Create new account
+              </button>
             </form>
           </div>
           {/* text below card */}
