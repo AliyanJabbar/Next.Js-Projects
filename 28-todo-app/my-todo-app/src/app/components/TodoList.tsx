@@ -6,7 +6,29 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaEdit, FaLess } from "react-icons/fa";
 
 const TodoList = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); //state to manage modal(popup) for taking input
+  const [error, setError] = useState<string>("");
+  //first time fetching from API
+  useEffect(() => {
+    async function fetchTodos() {
+      try {
+        const response = await fetch("/api/todos");
+        if (!response.ok) {
+          throw new Error("Failed to fetch todos");
+        }
+        const data = await response.json();
+        setTodos(data.sort((a: any, b: any) => a.id - b.id));
+      } catch (err) {
+        setError("Unable to load todos. Please check your connection.");
+        // Auto-hide error after 5 seconds
+        setTimeout(() => setError(""), 5000);
+      }
+    }
+
+    fetchTodos();
+  }, []);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  //state to manage modal(popup) for taking input
   const [inputData, setInputData] = useState(""); //state for input data
 
   // functions for handeling closing and opening of modal(popup)
@@ -18,52 +40,99 @@ const TodoList = () => {
 
   // for focusing the input when opening the modal
   let inputRef = useRef<HTMLInputElement>(null);
+
+  // to focus the input when modal open
   useEffect(() => {
     if (isModalOpen && inputRef.current) {
       inputRef.current.focus();
     }
-  });
+  }, [isModalOpen, inputRef.current]);
 
   //state for id
   const [id, setId] = useState(1);
   // state array for todos
   const [todos, setTodos] = useState<any[]>([]);
-  // function for adding a new todo
-  function addItem() {
+
+  async function addItem() {
+    //for changing a todo
     if (isChanging) {
-      let obj = todos.find((item) => item.id === id);
-      if (obj) {
-        if (inputRef.current) {
-          obj.text = inputRef.current.value;
-        }
+      if (inputRef.current) {
+        const response = await fetch("/api/todos", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: id,
+            text: inputRef.current.value,
+          }),
+        });
+        const updatedTodo = await response.json();
+        const newTodos = todos.map((todo) =>
+          todo.id === id ? updatedTodo : todo
+        );
+        setTodos(newTodos.sort((a, b) => a.id - b.id));
+        setIsModalOpen(false);
+        setIsChanging(false);
         setInputData("");
-        setId(todos.length + 1);
-        closeModal();
-        return;
       }
-    } else if (!isChanging && inputData.trim() !== "") {
-      let newTodo = {
-        text: inputData,
-        id: id,
-      };
-      setId(id + 1);
-      setTodos([...todos, newTodo]);
-      setInputData(""); //to make the input field empty
-      closeModal(); //to close the popup(input field modal)
-    } else {
-      closeModal(); //to close the popup(input field modal)
-      alert("Todo Should Not Be Empty!");
+    }
+    //for adding a new todo
+    else {
+      if (inputData.trim() !== "") {
+        try {
+          const response = await fetch("/api/todos", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: inputData,
+              id: todos.length + 1,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to add todo");
+          }
+
+          const newTodo = await response.json();
+          setTodos([...todos, newTodo]);
+          setInputData("");
+          closeModal();
+        } catch (error) {
+          setError(`ERROR ADDING A TODO : ${error}`);
+          setTimeout(() => setError(""), 5000);
+        }
+      } else {
+        setError("Task Should not be Empty!");
+        setTimeout(() => setError(""), 5000);
+      }
     }
   }
 
-  // function for deleting a todo
-  function delItem(id: number) {
-    const updatedTodos = todos.filter((item) => item.id !== id);
-    setTodos(updatedTodos);
-    updatedTodos.length === 0 && setId(1);
-  }
-
   //function for editing a todo
+
+  async function delItem(id: number) {
+    try {
+      const response = await fetch(`/api/todos?id=${id}`, {
+        method: "DELETE"
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Delete failed with status: ${response.status}`);
+      }
+  
+      const updatedTodos = await response.json();
+      setTodos(updatedTodos.sort((a: any, b: any) => a.id - b.id));
+  
+    } catch (error) {
+      setError("Failed to delete todo. Please try again.");
+      setTimeout(() => setError(""), 5000);
+    }
+  }
+    
+
   function editItem(id: number) {
     setIsChanging(true);
     setIsModalOpen(true);
@@ -71,8 +140,28 @@ const TodoList = () => {
     setInputData(obj.text);
     setId(obj.id);
   }
+
+  // handling the Shift + Enter functionality to add a todo
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && event.shiftKey && !isChanging) {
+        event.preventDefault();
+        openModal();
+        setIsChanging(false);
+        setInputData("");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
   return (
     <div>
+      {error && (
+        <div className="fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 fade-in ">
+          {error}
+        </div>
+      )}
       {/* button for adding a new task */}
       <button
         onClick={() => {
@@ -80,11 +169,15 @@ const TodoList = () => {
           setIsChanging(false);
           setInputData("");
         }}
-        className="inline-flex items-center justify-center font-bold text-2xl text-white bg-blue-700 w-[300px] sm:w-[500px] md:w-[650px] lg:w-[800px] xl:w-[900px] px-5 py-3 rounded-xl gap-2 hover:bg-blue-800 active:scale-95 transition-all duration-150"
+        className="relative inline-flex items-center justify-center font-bold text-2xl text-white bg-blue-700 w-[300px] sm:w-[500px] md:w-[650px] lg:w-[800px] xl:w-[900px] px-5 py-3 rounded-xl gap-2 hover:bg-blue-800 active:scale-95 transition-all duration-150"
       >
         Add New Task
         <IoIosAddCircle className="mt-[2px] ml-1" size={30} />
+        <div className="absolute bottom-0 right-1 text-[20px] font-thin">
+          Shift + Enter
+        </div>
       </button>
+
       {/* popup for taking input */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
